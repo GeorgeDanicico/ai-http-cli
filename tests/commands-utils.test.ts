@@ -11,8 +11,8 @@ describe("normalizeInput", () => {
     expect(normalizeInput("//scan")).toBe("/scan");
   });
 
-  it("defaults to slash", () => {
-    expect(normalizeInput("")).toBe("/");
+  it("returns empty string for empty input", () => {
+    expect(normalizeInput("")).toBe("");
   });
 
   it("trims leading spaces", () => {

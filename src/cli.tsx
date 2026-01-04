@@ -3,11 +3,13 @@ import "dotenv/config";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Text, render, useApp, useInput } from "ink";
 import TextInput from "ink-text-input";
+import { Spinner } from "cli-spinner";
 import type { LlmClient } from "./clients/types";
 import { commands } from "./commands/registry";
 import { getSuggestions, normalizeInput, parseInput, resolveCommand } from "./commands/utils";
 import { FatalError } from "./errors";
 import type { ScanCache } from "./scan/types";
+import type { StatusMessage, StatusState } from "./commands/types";
 
 const SUGGESTION_LIMIT = 6;
 
@@ -17,10 +19,35 @@ const App = () => {
   const [history, setHistory] = useState<string[]>([]);
   const [client, setClient] = useState<LlmClient | null>(null);
   const [scanCache, setScanCache] = useState<ScanCache | null>(null);
+  const [status, setStatus] = useState<StatusMessage | null>(null);
+  const [spinnerFrame, setSpinnerFrame] = useState("");
 
   const log = useCallback((message: string) => {
     setHistory((prev) => [...prev, message]);
   }, []);
+
+  const clearStatus = useCallback(() => {
+    setStatus(null);
+  }, []);
+
+  useEffect(() => {
+    if (!status || status.state !== "pending") {
+      setSpinnerFrame("");
+      return;
+    }
+
+    const spinner = new Spinner({
+      text: "%s",
+      onTick: (message: string) => setSpinnerFrame(message),
+    });
+    spinner.setSpinnerString(0);
+    spinner.setSpinnerDelay(80);
+    spinner.start();
+
+    return () => {
+      spinner.stop();
+    };
+  }, [status?.state, status?.text]);
 
   const suggestions = useMemo(() => getSuggestions(input, commands), [input]);
   const limitedSuggestions = suggestions.slice(0, SUGGESTION_LIMIT);
@@ -77,7 +104,7 @@ const App = () => {
     }
 
     const result = command.run(
-      { client, setClient, scanCache, setScanCache, log, exit },
+      { client, setClient, scanCache, setScanCache, setStatus, clearStatus, log, exit },
       parsed.args,
     );
     void Promise.resolve(result).catch((error) => {
@@ -93,12 +120,27 @@ const App = () => {
   };
 
   const showSuggestions = !normalizeInput(input).slice(1).includes(" ");
+  const statusColor: Record<StatusState, string> = {
+    pending: "yellow",
+    info: "cyan",
+    error: "red",
+    success: "green",
+  };
 
   return (
     <Box flexDirection="column" padding={1}>
       <Text color="cyanBright">ai-http-cli</Text>
       <Text dimColor>Type / to see commands. Tab autocompletes. Up/Down to select.</Text>
       <Text dimColor>All inputs must start with /.</Text>
+
+      {status ? (
+        <Box marginTop={1}>
+          <Text color={statusColor[status.state]}>
+            {status.state === "pending" && spinnerFrame ? `${spinnerFrame} ` : ""}
+            {status.text}
+          </Text>
+        </Box>
+      ) : null}
 
       {history.length > 0 ? (
         <Box flexDirection="column" marginTop={1}>
