@@ -16,6 +16,8 @@
     "dotenv": "^16.4.5",
     "ink": "^6.6.0",
     "ink-text-input": "^6.0.0",
+    "ollama": "latest",
+    "openai": "latest",
     "react": "^19.2.3"
   },
   "devDependencies": {
