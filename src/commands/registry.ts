@@ -1,4 +1,6 @@
 import { runInit } from "./init";
+import { runListEndpoints } from "./list-endpoints";
+import { runScan } from "./scan";
 import type { Command } from "./types";
 
 export const commands: Command[] = [
@@ -9,10 +11,13 @@ export const commands: Command[] = [
   },
   {
     id: "/scan",
-    description: "Scan a Spring Boot codebase for endpoints (placeholder)",
-    run: ({ log }) => {
-      log("Spring Boot scanning not implemented yet.");
-    },
+    description: "Scan a Spring Boot codebase for endpoints",
+    run: runScan,
+  },
+  {
+    id: "/list-endpoints",
+    description: "List endpoints found in the last scan",
+    run: runListEndpoints,
   },
   {
     id: "/help",

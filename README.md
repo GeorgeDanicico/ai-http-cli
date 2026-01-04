@@ -18,6 +18,10 @@ OPENAI_API_KEY=your-token
 # Optional overrides
 OPENAI_BASE_URL=https://api.openai.com/v1
 OLLAMA_HOST=http://127.0.0.1:11434
+# Optional model overrides
+AI_HTTP_CLI_MODEL=gpt-4o-mini
+# OPENAI_MODEL=gpt-4o-mini
+# OLLAMA_MODEL=llama3.1
 ```
 
 ## Run (dev)
@@ -39,6 +43,7 @@ bun run start
 
 ### Available commands
 - `/init` - Initialize the session (OpenAI if `OPENAI_API_KEY` is set, otherwise Ollama)
-- `/scan` - Scan a Spring Boot codebase (placeholder)
+- `/scan` - Scan a Spring Boot codebase (Java + @RestController only)
+- `/list-endpoints` - List endpoints found in the last scan
 - `/help` - List commands
 - `/exit` - Quit the CLI
