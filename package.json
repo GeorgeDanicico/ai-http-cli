@@ -1,0 +1,25 @@
+{
+  "name": "ai-http-cli",
+  "module": "src/cli.tsx",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "ai-http-cli": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.tsx",
+    "build": "bun build src/cli.tsx --outdir dist --target node",
+    "start": "bun dist/cli.js",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "ink": "^6.6.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.7",
+    "typescript": "^5"
+  }
+}
