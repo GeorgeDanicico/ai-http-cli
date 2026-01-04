@@ -1,12 +1,11 @@
+import { runInit } from "./init";
 import type { Command } from "./types";
 
 export const commands: Command[] = [
   {
     id: "/init",
-    description: "Initialize the ai-http-cli workspace (placeholder)",
-    run: ({ log }) => {
-      log("Initialized workspace (placeholder). Next: configure Spring Boot scanning.");
-    },
+    description: "Initialize the ai-http-cli session and LLM client",
+    run: runInit,
   },
   {
     id: "/scan",

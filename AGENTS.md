@@ -4,7 +4,7 @@ This repository targets Bun as the package manager/runtime with Node compatibili
 
 ## Project Structure & Module Organization
 - `README.md` contains the project overview and usage notes.
-- Expect `src/` for TypeScript source, `tests/` for automated checks, and `docs/` for deeper documentation.
+- Expect `src/` for TypeScript source (with feature folders like `src/commands/` and `src/clients/`), `tests/` for automated checks, and `docs/` for deeper documentation.
 - Build output should live in `dist/` and remain out of version control.
 - Keep modules small and cohesive; prefer feature-oriented folders once there are multiple CLI commands or subcommands.
 

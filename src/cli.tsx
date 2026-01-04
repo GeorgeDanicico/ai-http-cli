@@ -1,9 +1,12 @@
 #!/usr/bin/env node
+import "dotenv/config";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Text, render, useApp, useInput } from "ink";
 import TextInput from "ink-text-input";
+import type { LlmClient } from "./clients/types";
 import { commands } from "./commands/registry";
 import { getSuggestions, normalizeInput, parseInput, resolveCommand } from "./commands/utils";
+import { FatalError } from "./errors";
 
 const SUGGESTION_LIMIT = 6;
 
@@ -11,6 +14,7 @@ const App = () => {
   const { exit } = useApp();
   const [input, setInput] = useState("/");
   const [history, setHistory] = useState<string[]>([]);
+  const [client, setClient] = useState<LlmClient | null>(null);
 
   const log = useCallback((message: string) => {
     setHistory((prev) => [...prev, message]);
@@ -70,8 +74,13 @@ const App = () => {
       return;
     }
 
-    const result = command.run({ log, exit }, parsed.args);
+    const result = command.run({ client, setClient, log, exit }, parsed.args);
     void Promise.resolve(result).catch((error) => {
+      if (error instanceof FatalError) {
+        log(`Fatal: ${error.message}`);
+        exit(error);
+        return;
+      }
       const message = error instanceof Error ? error.message : String(error);
       log(`Command failed: ${message}`);
     });

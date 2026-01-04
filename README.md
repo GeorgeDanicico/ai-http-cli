@@ -10,6 +10,16 @@ Interactive CLI that will scan Spring Boot codebases for callable endpoints and 
 bun install
 ```
 
+## Environment
+Create a local `.env` (not committed) with your OpenAI key or rely on a local Ollama instance. See `.env.example` for a template.
+
+```bash
+OPENAI_API_KEY=your-token
+# Optional overrides
+OPENAI_BASE_URL=https://api.openai.com/v1
+OLLAMA_HOST=http://127.0.0.1:11434
+```
+
 ## Run (dev)
 ```bash
 bun run dev
@@ -25,9 +35,10 @@ bun run start
 - All inputs must start with `/`.
 - Type `/` to see suggestions.
 - Use `Tab` to autocomplete and `Up/Down` to select a suggestion.
+- If `OPENAI_API_KEY` is unset and Ollama is unreachable, `/init` exits the CLI.
 
 ### Available commands
-- `/init` - Initialize the workspace (placeholder)
+- `/init` - Initialize the session (OpenAI if `OPENAI_API_KEY` is set, otherwise Ollama)
 - `/scan` - Scan a Spring Boot codebase (placeholder)
 - `/help` - List commands
 - `/exit` - Quit the CLI

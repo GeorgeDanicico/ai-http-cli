@@ -1,4 +1,8 @@
+import type { LlmClient } from "../clients/types";
+
 export type CommandContext = {
+  client: LlmClient | null;
+  setClient: (client: LlmClient | null) => void;
   log: (message: string) => void;
   exit: () => void;
 };
