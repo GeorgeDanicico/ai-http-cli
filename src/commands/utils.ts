@@ -3,7 +3,7 @@ import type { Command } from "./types";
 export const normalizeInput = (value: string): string => {
   const trimmedStart = value.trimStart();
   if (trimmedStart === "") {
-    return "/";
+    return "";
   }
 
   const withoutLeadingSlash = trimmedStart.replace(/^\/+/, "");
@@ -14,7 +14,7 @@ export const parseInput = (value: string): { command: string; args: string[]; ra
   const normalized = normalizeInput(value).trim();
   const [command, ...args] = normalized.split(/\s+/);
   return {
-    command: command ?? "/",
+    command: command ?? "",
     args,
     raw: normalized,
   };
@@ -29,6 +29,11 @@ export const resolveCommand = (value: string, available: Command[]): Command | u
 
 export const getSuggestions = (value: string, available: Command[]): Command[] => {
   const normalized = normalizeInput(value);
+
+  if (!normalized) {
+    return []
+  }
+
   const [commandToken] = normalized.slice(1).split(/\s+/);
   const needle = commandToken?.toLowerCase() ?? "";
 

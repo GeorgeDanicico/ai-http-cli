@@ -13,7 +13,7 @@ const SUGGESTION_LIMIT = 6;
 
 const App = () => {
   const { exit } = useApp();
-  const [input, setInput] = useState("/");
+  const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [client, setClient] = useState<LlmClient | null>(null);
   const [scanCache, setScanCache] = useState<ScanCache | null>(null);
@@ -55,7 +55,7 @@ const App = () => {
     }
 
     if (key.escape) {
-      setInput("/");
+      setInput("");
     }
   });
 
@@ -72,7 +72,7 @@ const App = () => {
 
     if (!command) {
       log(`Unknown command: ${parsed.command}. Type /help for options.`);
-      setInput("/");
+      setInput("");
       return;
     }
 
@@ -89,7 +89,7 @@ const App = () => {
       const message = error instanceof Error ? error.message : String(error);
       log(`Command failed: ${message}`);
     });
-    setInput("/");
+    setInput("");
   };
 
   const showSuggestions = !normalizeInput(input).slice(1).includes(" ");
