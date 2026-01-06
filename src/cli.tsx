@@ -7,9 +7,9 @@ import { commands } from "./commands/registry";
 import { getSuggestions, normalizeInput, parseInput, resolveCommand } from "./commands/utils";
 import { FatalError } from "./errors";
 import type { ScanCache } from "./scan/types";
-import { useHistory } from "./hooks/use-history";
-import { useStatus } from "./hooks/use-status";
-import { useCallMode } from "./hooks/use-call-mode";
+import { useHistory } from "./hooks/useHistory";
+import { useStatus } from "./hooks/useStatus";
+import { useCallMode } from "./hooks/useCallMode";
 import { StatusLine } from "./ui/status-line";
 import { HistoryLog } from "./ui/history-log";
 import { CommandInput } from "./ui/command-input";
@@ -24,7 +24,7 @@ const App = () => {
   const [client, setClient] = useState<LlmClient | null>(null);
   const [scanCache, setScanCache] = useState<ScanCache | null>(null);
   const { history, log } = useHistory();
-  const { status, setStatus, clearStatus, spinnerFrame } = useStatus();
+  const { status, setStatus, clearStatus } = useStatus();
   const {
     callState,
     filteredEndpoints,
@@ -131,9 +131,9 @@ const App = () => {
       <Text color="cyanBright">ai-http-cli</Text>
       <Text dimColor>Type / to see commands. Tab autocompletes. Up/Down to select.</Text>
       <Text dimColor>All inputs must start with /.</Text>
-
-      <StatusLine status={status} spinnerFrame={spinnerFrame} />
       <HistoryLog history={history} />
+      
+      <StatusLine status={status} />
 
       {callState.mode === "select" ? (
         <EndpointPicker
