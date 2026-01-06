@@ -1,4 +1,3 @@
-import type { Spinner } from "cli-spinners";
 import { useEffect, useRef, useState } from "react";
 
 export function useSpinner(spinnerDef: any) {

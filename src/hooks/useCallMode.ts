@@ -145,6 +145,7 @@ export const useCallMode = ({
       return;
     }
 
+    log(`Selected endpoint: ${endpoint.method} ${endpoint.path}`)
     if (endpoint.payload) {
       beginPayload(endpoint);
       return;
@@ -169,6 +170,8 @@ export const useCallMode = ({
       log(parsed.error);
       return;
     }
+
+    log("Payload: " + callState.payloadDraft);
 
     await callEndpoint(callState.selectedEndpoint, parsed.payload);
     exitCallMode();
