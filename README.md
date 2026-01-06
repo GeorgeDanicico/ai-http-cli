@@ -1,6 +1,6 @@
 # ai-http-cli
 
-Interactive CLI that will scan Spring Boot codebases for callable endpoints and run them with mock data (scanning and execution are placeholders for now).
+Interactive CLI that scans Spring Boot Java codebases for REST endpoints using an LLM and lists them for the current session.
 
 ## Requirements
 - Bun
@@ -40,10 +40,18 @@ bun run start
 - Type `/` to see suggestions.
 - Use `Tab` to autocomplete and `Up/Down` to select a suggestion.
 - If `OPENAI_API_KEY` is unset and Ollama is unreachable, `/init` exits the CLI.
+- `/scan` only supports Spring Boot Java projects and will error on other project types.
+
+### Scan behavior
+- Detects Java projects via build markers (Maven/Gradle) or `src/main/java`.
+- Looks for `@RestController` files with mapping annotations.
+- Uses the configured LLM to extract method, path, handler name, and optional payload shape.
+- Caches results in-session for `/list-endpoints`.
 
 ### Available commands
 - `/init` - Initialize the session (OpenAI if `OPENAI_API_KEY` is set, otherwise Ollama)
 - `/scan` - Scan a Spring Boot codebase (Java + @RestController only)
 - `/list-endpoints` - List endpoints found in the last scan
+- `/call` - Interactively call an endpoint from the last scan (defaults to http://localhost:8080)
 - `/help` - List commands
 - `/exit` - Quit the CLI

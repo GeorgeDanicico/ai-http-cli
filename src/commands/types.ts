@@ -1,11 +1,6 @@
 import type { LlmClient } from "../clients/types";
 import type { ScanCache } from "../scan/types";
-
-export type StatusState = "pending" | "info" | "error" | "success";
-export type StatusMessage = {
-  text: string;
-  state: StatusState;
-};
+import type { StatusMessage } from "../ui/types";
 
 export type CommandContext = {
   client: LlmClient | null;
@@ -14,6 +9,7 @@ export type CommandContext = {
   setScanCache: (cache: ScanCache | null) => void;
   setStatus: (status: StatusMessage) => void;
   clearStatus: () => void;
+  enterCallMode: () => void;
   log: (message: string) => void;
   exit: () => void;
 };

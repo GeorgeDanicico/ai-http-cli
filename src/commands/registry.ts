@@ -1,3 +1,4 @@
+import { runCall } from "./call";
 import { runInit } from "./init";
 import { runListEndpoints } from "./list-endpoints";
 import { runScan } from "./scan";
@@ -13,6 +14,11 @@ export const commands: Command[] = [
     id: "/scan",
     description: "Scan a Spring Boot codebase for endpoints",
     run: runScan,
+  },
+  {
+    id: "/call",
+    description: "Call an endpoint from the last scan",
+    run: runCall,
   },
   {
     id: "/list-endpoints",

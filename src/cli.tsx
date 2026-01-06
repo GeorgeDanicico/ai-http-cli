@@ -1,57 +1,46 @@
 #!/usr/bin/env node
 import "dotenv/config";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, Text, render, useApp, useInput } from "ink";
-import TextInput from "ink-text-input";
-import cliSpinners from "cli-spinners";
 import type { LlmClient } from "./clients/types";
 import { commands } from "./commands/registry";
 import { getSuggestions, normalizeInput, parseInput, resolveCommand } from "./commands/utils";
 import { FatalError } from "./errors";
 import type { ScanCache } from "./scan/types";
-import type { StatusMessage, StatusState } from "./commands/types";
-import { useSpinner } from "./hooks/useSpinner";
+import { useHistory } from "./hooks/use-history";
+import { useStatus } from "./hooks/use-status";
+import { useCallMode } from "./hooks/use-call-mode";
+import { StatusLine } from "./ui/status-line";
+import { HistoryLog } from "./ui/history-log";
+import { CommandInput } from "./ui/command-input";
+import { EndpointPicker } from "./ui/endpoint-picker";
+import { PayloadInput } from "./ui/payload-input";
 
 const SUGGESTION_LIMIT = 6;
 
 const App = () => {
   const { exit } = useApp();
   const [input, setInput] = useState("");
-  const [history, setHistory] = useState<string[]>([]);
   const [client, setClient] = useState<LlmClient | null>(null);
   const [scanCache, setScanCache] = useState<ScanCache | null>(null);
-  const [status, setStatus] = useState<StatusMessage | null>(null);
-  const spinner = useSpinner(cliSpinners.dots);
-  // const [spinnerFrame, setSpinnerFrame] = useState("");
+  const { history, log } = useHistory();
+  const { status, setStatus, clearStatus, spinnerFrame } = useStatus();
+  const {
+    callState,
+    filteredEndpoints,
+    enterCallMode,
+    exitCallMode,
+    setFilter,
+    moveSelection,
+    selectCurrent,
+    setPayloadDraft,
+    submitPayload,
+  } = useCallMode({ scanCache, log, setStatus, clearStatus });
 
-  const log = useCallback((message: string) => {
-    setHistory((prev) => [...prev, message]);
-  }, []);
-
-  const clearStatus = useCallback(() => {
-    setStatus(null);
-  }, []);
-
-  // useEffect(() => {
-  //   if (!status || status.state !== "pending") {
-  //     setSpinnerFrame("");
-  //     return;
-  //   }
-
-  //   const spinner = new Spinner({
-  //     text: "%s",
-  //     onTick: (message: string) => setSpinnerFrame(message),
-  //   });
-  //   spinner.setSpinnerString(0);
-  //   spinner.setSpinnerDelay(80);
-  //   spinner.start();
-
-  //   return () => {
-  //     spinner.stop();
-  //   };
-  // }, [status?.state, status?.text]);
-
-  const suggestions = useMemo(() => getSuggestions(input, commands), [input]);
+  const suggestions = useMemo(
+    () => (callState.mode === "idle" ? getSuggestions(input, commands) : []),
+    [callState.mode, input],
+  );
   const limitedSuggestions = suggestions.slice(0, SUGGESTION_LIMIT);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -60,6 +49,9 @@ const App = () => {
   }, [input, suggestions.length]);
 
   useInput((_, key) => {
+    if (callState.mode !== "idle") {
+      return;
+    }
     if (!limitedSuggestions.length) {
       return;
     }
@@ -106,7 +98,17 @@ const App = () => {
     }
 
     const result = command.run(
-      { client, setClient, scanCache, setScanCache, setStatus, clearStatus, log, exit },
+      {
+        client,
+        setClient,
+        scanCache,
+        setScanCache,
+        setStatus,
+        clearStatus,
+        enterCallMode,
+        log,
+        exit,
+      },
       parsed.args,
     );
     void Promise.resolve(result).catch((error) => {
@@ -121,13 +123,8 @@ const App = () => {
     setInput("");
   };
 
-  const showSuggestions = !normalizeInput(input).slice(1).includes(" ");
-  const statusColor: Record<StatusState, string> = {
-    pending: "yellow",
-    info: "cyan",
-    error: "red",
-    success: "green",
-  };
+  const showSuggestions =
+    callState.mode === "idle" && !normalizeInput(input).slice(1).includes(" ");
 
   return (
     <Box flexDirection="column" padding={1}>
@@ -135,27 +132,30 @@ const App = () => {
       <Text dimColor>Type / to see commands. Tab autocompletes. Up/Down to select.</Text>
       <Text dimColor>All inputs must start with /.</Text>
 
-      {history.length > 0 ? (
-        <Box flexDirection="column" marginTop={1}>
-          {history.map((line, index) => (
-            <Text key={`${index}-${line}`}>{line}</Text>
-          ))}
-        </Box>
-      ) : null}
+      <StatusLine status={status} spinnerFrame={spinnerFrame} />
+      <HistoryLog history={history} />
 
-      {status ? (
-        <Box marginTop={1}>
-          <Text color={statusColor[status.state]}>
-            {status.state === "pending" ? `${spinner} ` : ""}
-            {status.text}
-          </Text>
-        </Box>
-      ) : null}
-
-      <Box marginTop={1}>
-        <Text color="green">{"> "}</Text>
-        <TextInput value={input} onChange={handleChange} onSubmit={handleSubmit} />
-      </Box>
+      {callState.mode === "select" ? (
+        <EndpointPicker
+          endpoints={filteredEndpoints}
+          filter={callState.filter}
+          selectedIndex={callState.selectedIndex}
+          onFilterChange={setFilter}
+          onMove={moveSelection}
+          onSelect={selectCurrent}
+          onExit={exitCallMode}
+        />
+      ) : callState.mode === "payload" && callState.selectedEndpoint ? (
+        <PayloadInput
+          endpoint={callState.selectedEndpoint}
+          payloadDraft={callState.payloadDraft}
+          onChange={setPayloadDraft}
+          onSubmit={submitPayload}
+          onExit={exitCallMode}
+        />
+      ) : (
+        <CommandInput value={input} onChange={handleChange} onSubmit={handleSubmit} />
+      )}
 
       {showSuggestions && limitedSuggestions.length > 0 ? (
         <Box flexDirection="column" marginLeft={2} marginTop={1}>
